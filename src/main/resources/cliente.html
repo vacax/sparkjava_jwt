@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Prueba para consumir API </title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+</head>
+<body>
+   <h1>Aplicación Demo - Consumir API</h1>
+   <p>
+      La aplicación demuestra el uso de la API sin necesidad indicando que el CORS
+       funciona sin inconvenientes.
+   </p>
+   <div id="login" style="display: none;">
+       Usuario: <input type="text" id="usuario" name="usuario" value="admin"/>
+       Contraseña: <input type="password" id="password"  name="password" value="admin"/>
+       <button  id="autenticar" value="Autenticar">Autenticar</button>
+   </div>
+   <div id="consultar" style="display: none;">
+       <h2>
+          Consulta de la API
+       </h2>
+       <p>
+           <button id="logout" value="Logout">Logout</button>
+       </p>
+       <p>
+           Listando los Estudiantes Creados
+           <button id="listar" value="listar">Listar</button>
+       </p>
+   </div>
+   <script>
+       //indica la URL del API a utilizar
+      var URL_API = "http://localhost:4567/";
+
+      //funciones que estaremos trabajando
+      $(document).ready(function () {
+         console.log("Jquery trabajando");
+
+         //no mostrando el panel si no está logeado.
+         if(localStorage.getItem("token") == null){
+            $("#login").show();
+         } else{
+             $("#consultar").show();
+         }
+
+         $("#autenticar").click(function () {
+             console.log("Autenticando Cliente");
+             var usuario = $("#usuario").val();
+             var password = $("#password").val();
+             console.log("La usuario y contraseña %s %s", usuario, password);
+             $.post(URL_API+"login", {usuario: usuario, password: password}, function (data) {
+                  console.log("La información recibida: %o", data);
+                  localStorage.setItem("token", data.token);
+                 alert("Usuario Autentificado");
+                 $("#login").toggle();
+                 $("#consultar").toggle();
+             }).fail(function (e) {
+                alert("Error de autentificacion: "+e);
+             });
+         });
+         
+         $("#logout").click(function () {
+            //por el momento limpiando la variable.
+            localStorage.removeItem("token");
+             $("#login").toggle();
+             $("#consultar").toggle();
+         });
+
+         $("#listar").click(function () {
+             $.ajax({
+                 type: "GET",
+                 url: URL_API+"api/estudiante/",
+                 crossDomain: true,
+                 beforeSend: function (xhr){
+                     xhr.setRequestHeader('Authorization', "Bearer "+localStorage.getItem("token"));
+                 },
+                 headers: {'Authorization': "Bearer "+localStorage.getItem("token"), 'miHeader' : 'asdasdasd'},
+                 success: function (data) {
+                     alert("Recuperando: "+eval(data));
+                 }
+             }).done(function (data) {
+                alert("completando: "+eval(data));
+             }).fail(function (e) {
+                 alert("Error: "+eval(e));
+             });
+         });
+
+      });
+   </script>
+</body>
+</html>

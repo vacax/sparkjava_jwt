@@ -19,6 +19,7 @@ import java.time.Period;
 import java.time.ZoneOffset;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.Set;
 
 import static spark.Spark.*;
 
@@ -36,6 +37,8 @@ public class Main {
     public static void main(String[] args) {
         System.out.println("Aplicación Demostración JSON Web TOKEN");
 
+        filtroCors();
+
         EstudianteService estudianteService = EstudianteService.getInstancia();
 
         get("/", (request, response) -> {
@@ -47,6 +50,8 @@ public class Main {
          * en forma directa.
          */
         post("/login", (request, response) -> {
+            //
+            response.type(ACCEPT_TYPE_JSON);
             //
             Usuario usuarioObj=null;
             String usuario = request.queryParamOrDefault("usuario","");
@@ -82,9 +87,20 @@ public class Main {
             before("/*",(request, response) ->{
                 System.out.println("Analizando que exista el token");
 
+                //si es del tipo options lo dejo pasar.
+                if(request.requestMethod() == "OPTIONS"){
+                    return;
+                }
+
                 //informacion para consultar en la trama.
                 String header = "Authorization";
                 String prefijo = "Bearer";
+
+                //mostrando todos los header recibidos.
+                Set<String> listaHeader = request.headers();
+                for(String key : listaHeader){
+                    System.out.println(String.format("header[%s] = %s", key, request.headers(key)));
+                }
 
                 //Verificando si existe el header de autorizacion.
                 String headerAutentificacion = request.headers(header);
@@ -101,7 +117,7 @@ public class Main {
                     //mostrando la información para demostración.
                     System.out.println("Mostrando el JWT recibido: " + claims.toString());
                 }catch (ExpiredJwtException | MalformedJwtException | SignatureException e){ //Excepciones comunes
-                     halt(FORBIDDEN, e.getMessage());
+                    halt(FORBIDDEN, e.getMessage());
                 }
 
                 //En este punto puedo realizar validaciones en función a los permisos del usuario.
@@ -109,6 +125,10 @@ public class Main {
 
 
             });
+
+            after("/*", ((request, response) -> {
+                response.type(ACCEPT_TYPE_JSON);
+            }));
 
             path("/estudiante", () -> {
 
@@ -175,5 +195,34 @@ public class Main {
                 .compact();
         loginResponse.setToken(jwt);
         return loginResponse;
+    }
+
+    /**
+     *  Aplicando el filtro para permitir el CORS
+     */
+    private static void filtroCors(){
+
+        //Enviando la información a solicitud del CORS
+        options("/*", (request, response) -> {
+            System.out.println("Entrando al metodo de options");
+            String accessControlRequestHeaders = request.headers("Access-Control-Request-Headers");
+            if (accessControlRequestHeaders != null) {
+                response.header("Access-Control-Allow-Headers",accessControlRequestHeaders);
+            }
+
+            String accessControlRequestMethod = request.headers("Access-Control-Request-Method");
+            if (accessControlRequestMethod != null) {
+                response.header("Access-Control-Allow-Methods",accessControlRequestMethod);
+            }
+
+            return "OK";
+        });
+
+        //Filtro para validar el CORS
+        before((request, response) -> {
+            System.out.println("Aplicando header del API del CORS");
+            response.header("Access-Control-Allow-Origin", "*");
+            //response.type("application/json");
+        });
     }
 }
