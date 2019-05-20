@@ -198,7 +198,9 @@ public class Main {
     }
 
     /**
-     *  Aplicando el filtro para permitir el CORS
+     *  Aplicando el filtro para permitir el CORS.
+     *  Si estamos realizando una consulta desde un navegador es
+     *  necesario dar permisos de intercambio de información.
      */
     private static void filtroCors(){
 
