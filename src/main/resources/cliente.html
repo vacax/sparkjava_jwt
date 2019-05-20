@@ -26,6 +26,10 @@
        <p>
            Listando los Estudiantes Creados
            <button id="listar" value="listar">Listar</button>
+           <br/>
+           <textarea id="informacion">
+
+           </textarea>
        </p>
    </div>
    <script>
@@ -76,10 +80,9 @@
                  },
                  headers: {'Authorization': "Bearer "+localStorage.getItem("token"), 'miHeader' : 'asdasdasd'},
                  success: function (data) {
-                     alert("Recuperando: "+eval(data));
+                     //alert("Recuperando: "+eval(data));
+                     $("#informacion").val(JSON.stringify(data));
                  }
-             }).done(function (data) {
-                alert("completando: "+eval(data));
              }).fail(function (e) {
                  alert("Error: "+eval(e));
              });
