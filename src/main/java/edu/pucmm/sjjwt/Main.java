@@ -54,7 +54,7 @@ public class Main {
             response.type(ACCEPT_TYPE_JSON);
             //
             Usuario usuarioObj=null;
-            String usuario = request.queryParamOrDefault("usuario","");
+            String usuario = request.queryParamOrDefault("usuario", "");
             String password = request.queryParamOrDefault("password", "");
             //
             String passwordAdmin = "admin";
@@ -105,7 +105,7 @@ public class Main {
                 //Verificando si existe el header de autorizacion.
                 String headerAutentificacion = request.headers(header);
                 if(headerAutentificacion ==null || !headerAutentificacion.startsWith(prefijo)){
-                    halt(FORBIDDEN, "No tiene permiso para acceder al recurso");
+                    halt(FORBIDDEN, "No tiene permiso para acceder al recurso, no enviando header de autorización");
                 }
 
                 //recuperando el token y validando
@@ -184,16 +184,19 @@ public class Main {
         LocalDateTime localDateTime = LocalDateTime.now().plusMinutes(3);
         System.out.println("La fecha actual: "+localDateTime.toString());
 
+        //
+        Date fechaExpiracion = Date.from(localDateTime.toInstant(ZoneOffset.ofHours(-4)));
         // creando la trama.
         String jwt = Jwts.builder()
                 .setIssuer("PUCMM-ECT")
                 .setSubject("Demo JWT")
-                .setExpiration(Date.from(localDateTime.toInstant(ZoneOffset.ofHours(-4))))
+                .setExpiration(fechaExpiracion)
                 .claim("usuario", usuario.getUsuario())
                 .claim("roles", String.join(",", usuario.getRoles()))
                 .signWith(secretKey)
                 .compact();
         loginResponse.setToken(jwt);
+        loginResponse.setExpires_in(fechaExpiracion.getTime());
         return loginResponse;
     }
 

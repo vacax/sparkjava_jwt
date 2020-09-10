@@ -18,7 +18,8 @@ dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
 
     //Libreria de sparkjava
-    implementation 'com.sparkjava:spark-core:2.8.0'
+    //implementation 'com.sparkjava:spark-core:2.8.0'
+    implementation 'com.sparkjava:spark-core:2.9.2'
 
     //Libreria GSON para trabajar con el parseo de JSON a Objeto y viceversa.
     // https://mvnrepository.com/artifact/com.google.code.gson/gson
